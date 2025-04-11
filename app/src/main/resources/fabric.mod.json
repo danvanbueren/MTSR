@@ -17,7 +17,7 @@
 	"environment": "client",
 	"entrypoints": {
 		"client": [
-			"me.danvb10.mtsr.MTSR"
+			"me.danvb10.mtsr.ClientEntrypoint"
 		]
 	},
 	"custom" : {
