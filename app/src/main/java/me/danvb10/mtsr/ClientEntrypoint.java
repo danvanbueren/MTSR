@@ -1,6 +1,5 @@
 package me.danvb10.mtsr;
 
-import me.danvb10.mtsr.init.Config;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.util.Identifier;
@@ -19,7 +18,7 @@ public class ClientEntrypoint implements ClientModInitializer {
 
 	@Override
 	public void onInitializeClient() {
-		Config.init();
+		LOGGER.info("Initializing Client");
 
 		// Logic
 
