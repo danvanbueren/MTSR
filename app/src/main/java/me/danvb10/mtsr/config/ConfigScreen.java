@@ -5,7 +5,7 @@ import io.wispforest.owo.ui.component.*;
 import io.wispforest.owo.ui.container.Containers;
 import io.wispforest.owo.ui.container.FlowLayout;
 import io.wispforest.owo.ui.core.*;
-import me.danvb10.mtsr.config.components.RichWindow;
+import me.danvb10.mtsr.config.components.*;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
@@ -19,28 +19,24 @@ public class ConfigScreen extends BaseOwoScreen<FlowLayout> {
 
     private final Screen parent;
 
-    private RichWindow generalSettingsWindow, modelSettingsWindow, quickActionsWindow, textureManagerWindow, activityMonitorWindow, activityLogWindow;
+    private GeneralSettingsWindow generalSettingsWindow;
+    private ModelSettingsWindow modelSettingsWindow;
+    private QuickActionsWindow quickActionsWindow;
+    private TextureManagerWindow textureManagerWindow;
+    private ActivityMonitorWindow activityMonitorWindow;
+    private ActivityLogWindow activityLogWindow;
 
     // Constructor
     public ConfigScreen(Screen parent) {
         super();
         this.parent = parent;
-        
-        this.generalSettingsWindow = new RichWindow(this, GENERAL_SETTINGS_WINDOW)
-                .child(Components.label(Text.literal("General Settings")));
-        this.modelSettingsWindow = new RichWindow(this, MODEL_SETTINGS_WINDOW);
-        this.quickActionsWindow = new RichWindow(this, QUICK_ACTIONS_WINDOW);
 
-        this.textureManagerWindow = new RichWindow(this, TEXTURE_MANAGER_WINDOW)
-                .setFullHeight(true)
-                .setMinimizeIsDisabled(true);
-
-        this.activityMonitorWindow = new RichWindow(this, ACTIVITY_MONITOR_WINDOW)
-                .setFullHeight(true)
-                .setMinimizeIsDisabled(true);
-        this.activityLogWindow = new RichWindow(this, ACTIVITY_LOG_WINDOW)
-                .setFullHeight(true)
-                .setMinimizeIsDisabled(true);
+        this.generalSettingsWindow = new GeneralSettingsWindow(this);
+        this.modelSettingsWindow = new ModelSettingsWindow(this);
+        this.quickActionsWindow = new QuickActionsWindow(this);
+        this.textureManagerWindow = new TextureManagerWindow(this);
+        this.activityMonitorWindow = new ActivityMonitorWindow(this);
+        this.activityLogWindow = new ActivityLogWindow(this);
 
     }
 

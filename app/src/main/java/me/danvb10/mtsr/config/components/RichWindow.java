@@ -5,6 +5,7 @@ import io.wispforest.owo.ui.component.Components;
 import io.wispforest.owo.ui.container.CollapsibleContainer;
 import io.wispforest.owo.ui.container.Containers;
 import io.wispforest.owo.ui.container.FlowLayout;
+import io.wispforest.owo.ui.container.ScrollContainer;
 import io.wispforest.owo.ui.core.*;
 import me.danvb10.mtsr.config.ConfigScreen;
 import me.danvb10.mtsr.config.ConfigScreenRichWindowMaximized;
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 import java.util.UUID;
 
 import static me.danvb10.mtsr.ClientEntrypoint.LOGGER;
+import static me.danvb10.mtsr.config.components.RichWindowTypes.*;
 
 public class RichWindow {
 
@@ -25,14 +27,16 @@ public class RichWindow {
     private final ConfigScreen owner;
     private final RichWindowTypes richWindowType;
     private boolean fullHeight, maximized, minimizeIsDisabled;
-    private final ArrayList<Component> children, prerequisiteChildren;
-    private CollapsibleContainer hideableComponent, hideableComponentContentWhileHidden;
+    private final ArrayList<Component> children;
+    private ArrayList<Component> prerequisiteChildren;
+    private CollapsibleContainer collapsibleContainer;
 
     // Constructor
     public RichWindow(ConfigScreen owner, RichWindowTypes richWindowType) {
         this.owner = owner;
         this.richWindowType = richWindowType;
-        this.setWindowProps();
+        this.windowName = "Default";
+        this.windowTooltip = "Default";
         this.uuid = UUID.randomUUID();
 
         this.fullHeight = false;
@@ -40,42 +44,7 @@ public class RichWindow {
         this.minimizeIsDisabled = false;
 
         this.children = new ArrayList<>();
-        this.prerequisiteChildren = buildPrerequisiteChildren();
-    }
-
-    // Assign title and tooltip
-    private void setWindowProps() {
-        switch (richWindowType) {
-            case GENERAL_SETTINGS_WINDOW:
-                this.windowName = "General Settings";
-                this.windowTooltip = "...";
-                break;
-            case MODEL_SETTINGS_WINDOW:
-                this.windowName = "Model Settings";
-                this.windowTooltip = "...";
-                break;
-            case QUICK_ACTIONS_WINDOW:
-                this.windowName = "Quick Actions";
-                this.windowTooltip = "...";
-                break;
-            case TEXTURE_MANAGER_WINDOW:
-                this.windowName = "Texture Manager";
-                this.windowTooltip = "...";
-                break;
-            case ACTIVITY_MONITOR_WINDOW:
-                this.windowName = "Activity Monitor";
-                this.windowTooltip = "...";
-                break;
-            case ACTIVITY_LOG_WINDOW:
-                this.windowName = "Activity Log";
-                this.windowTooltip = "...";
-                break;
-            default:
-                this.windowName = "Unknown Window";
-                this.windowTooltip = "...";
-                break;
-        }
-
+        this.prerequisiteChildren = null;
     }
 
     // Helper method for console logging
@@ -91,7 +60,7 @@ public class RichWindow {
                 ;
 
         Component minButton =
-                Components.button(Text.literal("-"), button -> {this.hideableComponent.toggleExpansion();})
+                Components.button(Text.literal("-"), button -> {this.collapsibleContainer.toggleExpansion();})
                         .verticalSizing(Sizing.fixed(10))
                         .horizontalSizing(Sizing.fixed(10))
                         .margins(Insets.right(5))
@@ -140,22 +109,58 @@ public class RichWindow {
         assert MinecraftClient.getInstance() != null;
 
         if (this.maximized) {
+            // Minimize
             log("Minimizing " + this.richWindowType);
 
-            // Minimize
-            Screen configScreen = new ConfigScreen(this.owner);
-            MinecraftClient.getInstance().setScreen(configScreen);
+            MinecraftClient.getInstance().setScreen(this.owner);
         } else {
+            // Maximize
             log("Maximizing " + this.richWindowType);
 
-            // Maximize
-            RichWindow richWindow = new RichWindow(this.owner, this.richWindowType)
-                    .setFullHeight(true)
-                    .setMaximized(true)
-                    .setMinimizeIsDisabled(true);
+            Component newComponent;
+
+            switch (this.richWindowType) {
+                case GENERAL_SETTINGS_WINDOW:
+                    newComponent = new GeneralSettingsWindow(this.owner)
+                            .setFullscreen(true)
+                            .build();
+                    break;
+                case MODEL_SETTINGS_WINDOW:
+                    newComponent = new ModelSettingsWindow(this.owner)
+                            .setFullscreen(true)
+                            .build();
+                    break;
+                case QUICK_ACTIONS_WINDOW:
+                    newComponent = new QuickActionsWindow(this.owner)
+                            .setFullscreen(true)
+                            .build();
+                    break;
+                case TEXTURE_MANAGER_WINDOW:
+                    newComponent = new TextureManagerWindow(this.owner)
+                            .setFullscreen(true)
+                            .build();
+                    break;
+                case ACTIVITY_MONITOR_WINDOW:
+                    newComponent = new ActivityMonitorWindow(this.owner)
+                            .setFullscreen(true)
+                            .build();
+                    break;
+                case ACTIVITY_LOG_WINDOW:
+                    newComponent = new ActivityLogWindow(this.owner)
+                            .setFullscreen(true)
+                            .build();
+                    break;
+                default:
+                    newComponent = new RichWindow(this.owner, DEFAULT_WINDOW)
+                            .setFullHeight(true)
+                            .setMaximized(true)
+                            .setMinimizeIsDisabled(true)
+                            .build();
+                    break;
+            }
 
             Screen maxedScreen = new ConfigScreenRichWindowMaximized(this.owner)
-                    .child(richWindow.build());
+                    .child(newComponent);
 
             MinecraftClient.getInstance().setScreen(maxedScreen);
         }
@@ -163,23 +168,33 @@ public class RichWindow {
 
     // Build and return full component
     public Component build() {
+        this.prerequisiteChildren = buildPrerequisiteChildren();
 
+        ArrayList<Component> copiedPrerequisiteChildrenArrayList = new ArrayList<>(this.prerequisiteChildren);
         FlowLayout flowLayout;
+
         if (fullHeight) {
             flowLayout = Containers.verticalFlow(Sizing.fill(100), Sizing.fill(100));
+
+            ScrollContainer<FlowLayout> scrollableContainer = Containers
+                    .verticalScroll(Sizing.fill(100), Sizing.fill(100),
+                            Containers
+                                    .verticalFlow(Sizing.fill(100), Sizing.content())
+                                    .children(this.children)
+                    );
+
+            copiedPrerequisiteChildrenArrayList.add(scrollableContainer);
         } else {
             flowLayout = Containers.verticalFlow(Sizing.fill(100), Sizing.content());
+
+            this.collapsibleContainer = (CollapsibleContainer) Containers
+                    .collapsible(Sizing.content(), Sizing.content(), Text.literal(""), true)
+                    .children(this.children);
+
+            copiedPrerequisiteChildrenArrayList.add(this.collapsibleContainer);
         }
 
-        ArrayList<Component> c = new ArrayList<>(this.prerequisiteChildren);
-
-        this.hideableComponent = (CollapsibleContainer) Containers
-                .collapsible(Sizing.content(), Sizing.content(), Text.literal(""), true)
-                .children(this.children);
-
-        c.add(this.hideableComponent);
-
-        ParentComponent rootLayout = flowLayout.children(c);
+        ParentComponent rootLayout = flowLayout.children(copiedPrerequisiteChildrenArrayList);
 
         rootLayout
                 .padding(Insets.of(8))
@@ -208,6 +223,20 @@ public class RichWindow {
     }
     public RichWindow setMinimizeIsDisabled(boolean minimizeIsDisabled) {
         this.minimizeIsDisabled = minimizeIsDisabled;
+        return this;
+    }
+    public String getWindowName() {
+        return this.windowName;
+    }
+    public RichWindow setWindowName(String windowName) {
+        this.windowName = windowName;
+        return this;
+    }
+    public String getWindowTooltip() {
+        return windowTooltip;
+    }
+    public RichWindow setWindowTooltip(String windowTooltip) {
+        this.windowTooltip = windowTooltip;
         return this;
     }
 
