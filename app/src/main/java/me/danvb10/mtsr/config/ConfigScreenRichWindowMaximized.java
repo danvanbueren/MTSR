@@ -45,7 +45,7 @@ public class ConfigScreenRichWindowMaximized extends BaseOwoScreen<FlowLayout> {
                                                                 )
                                                 )
                                                 .scrollbarThiccness(6)
-                                                .padding(Insets.of(0, 0, 0, 16))
+                                                .padding(Insets.of(0, 0, 0, 17))
                                 )
                 )
                 .surface(Surface.VANILLA_TRANSLUCENT.and(Surface.blur(100, 100)))

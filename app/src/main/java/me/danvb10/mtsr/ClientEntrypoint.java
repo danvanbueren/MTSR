@@ -19,8 +19,5 @@ public class ClientEntrypoint implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
 		LOGGER.info("Initializing Client");
-
-		// Logic
-
 	}
 }
