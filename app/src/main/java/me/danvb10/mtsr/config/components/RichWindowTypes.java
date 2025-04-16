@@ -1,0 +1,10 @@
+package me.danvb10.mtsr.config.components;
+
+public enum RichWindowTypes {
+    GENERAL_SETTINGS_WINDOW,
+    MODEL_SETTINGS_WINDOW,
+    QUICK_ACTIONS_WINDOW,
+    TEXTURE_MANAGER_WINDOW,
+    ACTIVITY_MONITOR_WINDOW,
+    ACTIVITY_LOG_WINDOW;
+}
